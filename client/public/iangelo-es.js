@@ -99,10 +99,67 @@
     '  pointer-events: none;',
     '  z-index: 9990;',
     '  user-select: none;',
-    '}'  ].join('\n');
+    '}',
+    /* Control panel */
+    '#iangelo-controls-panel {',
+    '  position: fixed;',
+    '  top: 12px;',
+    '  left: 12px;',
+    '  background: rgba(10,10,15,0.8);',
+    '  border: 1px solid rgba(212,160,23,0.3);',
+    '  border-radius: 6px;',
+    '  padding: 8px 12px;',
+    '  font-family: "Inter", system-ui, monospace;',
+    '  font-size: 11px;',
+    '  color: rgba(212,160,23,0.8);',
+    '  line-height: 1.4;',
+    '  pointer-events: none;',
+    '  z-index: 9989;',
+    '  user-select: none;',
+    '  letter-spacing: 0.05em;',
+    '}',
+    '#iangelo-controls-panel > div {',
+    '  margin: 2px 0;',
+    '}',
+    '#iangelo-controls-panel .label {',
+    '  color: rgba(212,160,23,0.6);',
+    '  font-size: 10px;',
+    '}',
+    /* Loading overlay */
+    '#iangelo-loading-overlay {',
+    '  position: fixed;',
+    '  top: 0;',
+    '  left: 0;',
+    '  width: 100%;',
+    '  height: 100%;',
+    '  background: linear-gradient(135deg, rgba(10,10,15,0.95), rgba(20,15,40,0.95));',
+    '  display: flex;',
+    '  align-items: center;',
+    '  justify-content: center;',
+    '  z-index: 99999;',
+    '  pointer-events: none;',
+    '}',
+    '#iangelo-loading-overlay.hidden {',
+    '  opacity: 0;',
+    '  transition: opacity 0.6s ease-out;',
+    '  pointer-events: none;',
+    '}',
+    '#iangelo-loading-text {',
+    '  font-family: "Inter", system-ui, sans-serif;',
+    '  font-size: 14px;',
+    '  color: rgba(212,160,23,0.8);',
+    '  letter-spacing: 0.1em;',
+    '  animation: pulse 1.5s infinite;',
+    '}',
+    '@keyframes pulse {',
+    '  0%, 100% { opacity: 0.6; }',
+    '  50% { opacity: 1; }',
+    '}'
+  ].join('\n');
 
   /* ── Inject CSS ── */
   function injectStyles() {
+    if (document.getElementById('iangelo-hud-styles')) return;
     var style = document.createElement('style');
     style.id = 'iangelo-hud-styles';
     style.textContent = HUD_CSS;
@@ -116,6 +173,50 @@
     el.id = 'iangelo-watermark';
     el.textContent = '⚔ iAngelo Quest Studio · Beta Fundadora';
     document.body.appendChild(el);
+  }
+
+  /* ── Inject control panel ── */
+  function injectControlPanel() {
+    if (document.getElementById('iangelo-controls-panel')) return;
+    var panel = document.createElement('div');
+    panel.id = 'iangelo-controls-panel';
+    panel.innerHTML = '<div><span class="label">CONTROLES</span></div>' +
+      '<div>WASD / ⬆⬇⬅➡: Moverse</div>' +
+      '<div>🖱️ Click: Disparar</div>' +
+      '<div>R: Recargar</div>';
+    document.body.appendChild(panel);
+  }
+
+  /* ── Inject loading overlay ── */
+  function injectLoadingOverlay() {
+    if (document.getElementById('iangelo-loading-overlay')) return;
+    var overlay = document.createElement('div');
+    overlay.id = 'iangelo-loading-overlay';
+    var text = document.createElement('div');
+    text.id = 'iangelo-loading-text';
+    text.textContent = '⚔ Cargando Arena…';
+    overlay.appendChild(text);
+    document.body.appendChild(overlay);
+
+    // Hide overlay when canvas is detected or after 4 seconds
+    function hideOverlay() {
+      overlay.classList.add('hidden');
+      setTimeout(function() {
+        if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+      }, 600);
+    }
+
+    var canvasCheckInterval = setInterval(function() {
+      if (document.querySelector('canvas')) {
+        clearInterval(canvasCheckInterval);
+        hideOverlay();
+      }
+    }, 100);
+
+    setTimeout(function() {
+      clearInterval(canvasCheckInterval);
+      hideOverlay();
+    }, 4000);
   }
 
   /* ── Translate a single text node ── */
@@ -167,6 +268,8 @@
   function init() {
     injectStyles();
     injectWatermark();
+    injectControlPanel();
+    injectLoadingOverlay();
     walkAndTranslate();
     observeMutations();
     // Re-run after a delay to catch Phaser canvas text (canvas text is not DOM)
