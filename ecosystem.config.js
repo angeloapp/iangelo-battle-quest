@@ -9,11 +9,11 @@ module.exports = {
     exec_mode: 'fork',
     env: {
       NODE_ENV: 'development',
-      PORT: 2567
+      PORT: process.env.PORT || 2568
     },
     env_production: {
       NODE_ENV: 'production',
-      PORT: 2567
+      PORT: process.env.PORT || 2568
     }
   }]
 };
