@@ -1,0 +1,22 @@
+name: Despliegue de iAngelo Battle Quest en VPS
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Desplegar por SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            cd /var/www/iangelo-battle-quest
+            git pull origin main
+            npm install --omit=dev --legacy-peer-deps
+            pm2 reload iangelo-battle-quest || pm2 start ecosystem.config.js --env production
+            pm2 save

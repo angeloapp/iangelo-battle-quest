@@ -1,0 +1,11 @@
+# El repositorio elegido para este proyecto es:
+# https://github.com/angeloapp/battleroyal
+
+# Comandos manuales de respaldo, por si algún día necesitas volver a subirlo desde tu computadora:
+
+git init
+git add .
+git commit -m "Personalización inicial de iAngelo Battle Quest"
+git branch -M main
+git remote add origin https://github.com/angeloapp/battleroyal.git
+git push -u origin main

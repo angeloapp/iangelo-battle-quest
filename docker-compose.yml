@@ -1,0 +1,10 @@
+services:
+  iangelo-battle-quest:
+    build: .
+    container_name: iangelo-battle-quest
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 2567
+    ports:
+      - "2567:2567"
