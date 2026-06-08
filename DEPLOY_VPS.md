@@ -12,7 +12,7 @@ sudo apt install -y nodejs
 sudo npm install -g pm2
 sudo mkdir -p /var/www
 cd /var/www
-sudo git clone https://github.com/angeloapp/battleroyal.git iangelo-battle-quest
+sudo git clone https://github.com/angeloapp/iangelo-battle-quest.git iangelo-battle-quest
 sudo chown -R $USER:$USER /var/www/iangelo-battle-quest
 cd /var/www/iangelo-battle-quest
 npm install --omit=dev --legacy-peer-deps
