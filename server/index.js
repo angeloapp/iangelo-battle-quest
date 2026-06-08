@@ -40,6 +40,11 @@ app.use("/iangelo-battle-quest-terms-conditions", express.static(path.join(__dir
 
 app.use(express.static(path.join(__dirname, "./../client/public")));
 
+// Ruta /play para acceso al juego
+app.get('/play', (req, res) => {
+  res.sendFile(path.join(__dirname, './../client/public/index.html'));
+});
+
 //register colyseus monitor AFTER registering your room handlers
 if (process.env.NODE_ENV != "production") {
     app.use("/colyseus", monitor(gameServer));
