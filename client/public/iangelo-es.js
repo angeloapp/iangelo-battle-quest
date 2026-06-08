@@ -1,121 +1,183 @@
-(function () {
+/**
+ * iangelo-es.js
+ * Patch de traducción y mejoras de UI para iAngelo Battle Quest.
+ * Reemplaza textos del HUD en español sin modificar bundle.min.js ni
+ * afectar la lógica Phaser/Colyseus existente.
+ *
+ * iAngelo Quest Studio · Beta Fundadora · MIT License
+ */
+(function() {
   'use strict';
 
-  var PROJECT_NAME = 'iAngelo Battle Quest';
-  var replacements = new Map([
-    ['Battlefield honor', PROJECT_NAME],
-    ['Battlefield Honor', PROJECT_NAME],
-    ['Battlefield-honor', PROJECT_NAME],
-    ['A Battle royale game for the real ones', 'Arena multijugador 2D estilo battle quest'],
-    ['Name', 'Nombre de guerrero'],
-    ['Enter your name', 'Nombre de guerrero'],
-    ['Play', 'Entrar'],
-    ['play', 'Entrar'],
-    ['About', 'Sobre el juego'],
-    ['How to play', 'Cómo jugar'],
-    ['Stats', 'Estadísticas'],
-    ['Resumen', 'Resumen'],
-    ['score: ', 'puntuación: '],
-    ['time survived: ', 'tiempo sobrevivido: '],
-    ['hits: ', 'impactos: '],
-    ['play again', 'jugar de nuevo'],
-    ['share the game', 'compartir juego'],
-    ['Tap the player to reload', 'Toca tu jugador para recargar'],
-    ['Press R to reload', 'Presiona R para recargar'],
-    ["'s party", ''],
-    ['number of kills : ', 'bajas: '],
-    ['number of kills: ', 'bajas: '],
-    ['alive', 'vivos'],
-    ['Reloading...', 'Recargando...'],
-    ['Bullets', 'Munición'],
-    ['Leaderboard', 'Ranking'],
-    ['Kills', 'Bajas'],
-    ['Loading...', 'Cargando...']
-  ]);
+  /* ── Mapa de traducciones HUD ── */
+  var TRANSLATIONS = {
+    // Etiquetas comunes en inglés → español
+    'Health':       'Vida',
+    'HEALTH':       'VIDA',
+    'health':       'vida',
+    'Shield':       'Escudo',
+    'SHIELD':       'ESCUDO',
+    'shield':       'escudo',
+    'Bullets':      'Munición',
+    'BULLETS':      'MUNICIÓN',
+    'bullets':      'munición',
+    'Ammo':         'Munición',
+    'AMMO':         'MUNICIÓN',
+    'ammo':         'munición',
+    'Kills':        'Eliminaciones',
+    'KILLS':        'ELIM.',
+    'kills':        'eliminaciones',
+    'Alive':        'Vivos',
+    'ALIVE':        'VIVOS',
+    'alive':        'vivos',
+    'Players':      'Jugadores',
+    'PLAYERS':      'JUGADORES',
+    'players':      'jugadores',
+    'Leaderboard':  'Ranking',
+    'LEADERBOARD':  'RANKING',
+    'leaderboard':  'ranking',
+    'Score':        'Puntos',
+    'SCORE':        'PUNTOS',
+    'score':        'puntos',
+    'Rank':         'Posición',
+    'RANK':         'POS.',
+    'rank':         'posición',
+    'You died':     '¡Fuiste eliminado!',
+    'You win':      '¡Victoria!',
+    'You Won':      '¡Victoria!',
+    'Game Over':    'Fin de partida',
+    'GAME OVER':    'FIN DE PARTIDA',
+    'Connecting':   'Conectando…',
+    'Connected':    'Conectado',
+    'Disconnected': 'Desconectado',
+    'Waiting for players': 'Esperando jugadores…',
+    'Game starting': 'La partida comienza…',
+    'Enter your name': 'Escribe tu nombre',
+    'Play':         'Jugar',
+    'Spectate':     'Espectador',
+    'Battlefield-Honor': 'iAngelo Battle Quest',
+    'Battlefield Honor': 'iAngelo Battle Quest',
+    'Battlefield':  'iAngelo Battle Quest'
+  };
 
-  function replaceTextValue(value) {
-    if (!value || typeof value !== 'string') return value;
-    var output = value;
-    replacements.forEach(function (to, from) {
-      output = output.split(from).join(to);
-    });
-    return output;
+  /* ── Estilos premium para el HUD ── */
+  var HUD_CSS = [
+    '/* iAngelo Battle Quest — HUD premium overlay */',
+    '#hud, .hud, [id*="hud"], [class*="hud"] {',
+    '  font-family: "Inter", system-ui, sans-serif !important;',
+    '}',
+    /* Health bar */
+    '.health-bar, [class*="health"] > .bar, [id*="health-bar"] {',
+    '  background: linear-gradient(90deg, #b71c1c, #e53935) !important;',
+    '  border-radius: 3px !important;',
+    '}',
+    /* Shield bar */
+    '.shield-bar, [class*="shield"] > .bar, [id*="shield-bar"] {',
+    '  background: linear-gradient(90deg, #0077b6, #00b4d8) !important;',
+    '  border-radius: 3px !important;',
+    '}',
+    /* Kill counter */
+    '[class*="kill"], [id*="kill"] {',
+    '  color: #f0c040 !important;',
+    '  font-weight: 700 !important;',
+    '}',
+    /* Leaderboard */
+    '[class*="leaderboard"], [class*="ranking"], [id*="leaderboard"] {',
+    '  background: rgba(10,10,15,0.85) !important;',
+    '  border: 1px solid rgba(212,160,23,0.25) !important;',
+    '  border-radius: 6px !important;',
+    '}',
+    /* Studio watermark */
+    '#iangelo-watermark {',
+    '  position: fixed;',
+    '  bottom: 10px;',
+    '  right: 12px;',
+    '  font-family: "Inter", sans-serif;',
+    '  font-size: 10px;',
+    '  letter-spacing: 0.07em;',
+    '  color: rgba(212,160,23,0.5);',
+    '  pointer-events: none;',
+    '  z-index: 9990;',
+    '  user-select: none;',
+    '}'  ].join('\n');
+
+  /* ── Inject CSS ── */
+  function injectStyles() {
+    var style = document.createElement('style');
+    style.id = 'iangelo-hud-styles';
+    style.textContent = HUD_CSS;
+    document.head.appendChild(style);
   }
 
-  function patchDomText(root) {
-    root = root || document.body;
-    if (!root) return;
+  /* ── Inject watermark ── */
+  function injectWatermark() {
+    if (document.getElementById('iangelo-watermark')) return;
+    var el = document.createElement('div');
+    el.id = 'iangelo-watermark';
+    el.textContent = '⚔ iAngelo Quest Studio · Beta Fundadora';
+    document.body.appendChild(el);
+  }
 
-    var walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null, false);
+  /* ── Translate a single text node ── */
+  function translateNode(node) {
+    var original = node.nodeValue;
+    if (!original || !original.trim()) return;
+    var result = original;
+    for (var key in TRANSLATIONS) {
+      if (!Object.prototype.hasOwnProperty.call(TRANSLATIONS, key)) continue;
+      // Whole-word safe replace
+      var re = new RegExp('(?<![\\w])'  + key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '(?![\\w])', 'g');
+      result = result.replace(re, TRANSLATIONS[key]);
+    }
+    if (result !== original) node.nodeValue = result;
+  }
+
+  /* ── Walk DOM text nodes ── */
+  function walkAndTranslate(root) {
+    var walker = document.createTreeWalker(
+      root || document.body,
+      NodeFilter.SHOW_TEXT,
+      null,
+      false
+    );
     var node;
     while ((node = walker.nextNode())) {
-      var next = replaceTextValue(node.nodeValue);
-      if (next !== node.nodeValue) node.nodeValue = next;
+      translateNode(node);
     }
+  }
 
-    Array.prototype.forEach.call(root.querySelectorAll('input, textarea, button, [placeholder], [title], [aria-label]'), function (el) {
-      ['placeholder', 'title', 'aria-label', 'value'].forEach(function (attr) {
-        if (el.getAttribute && el.getAttribute(attr)) {
-          var next = replaceTextValue(el.getAttribute(attr));
-          if (next !== el.getAttribute(attr)) el.setAttribute(attr, next);
-        }
+  /* ── Observe future DOM mutations ── */
+  function observeMutations() {
+    if (!window.MutationObserver) return;
+    var observer = new MutationObserver(function(mutations) {
+      mutations.forEach(function(mutation) {
+        mutation.addedNodes.forEach(function(node) {
+          if (node.nodeType === Node.TEXT_NODE) {
+            translateNode(node);
+          } else if (node.nodeType === Node.ELEMENT_NODE) {
+            walkAndTranslate(node);
+          }
+        });
       });
     });
+    observer.observe(document.body, { childList: true, subtree: true });
   }
 
-  function applyBranding() {
-    document.documentElement.lang = 'es-MX';
-    document.title = PROJECT_NAME + ' | Arena Battle Quest 2D Multijugador';
-    var desc = 'Arena multijugador 2D estilo battle quest: entra, sobrevive, elimina enemigos y domina el ranking.';
-    var metaDescription = document.querySelector('meta[name="description"]');
-    if (metaDescription) metaDescription.setAttribute('content', desc);
-    Array.prototype.forEach.call(document.querySelectorAll('meta[property="og:title"]'), function (m) { m.setAttribute('content', PROJECT_NAME); });
-    Array.prototype.forEach.call(document.querySelectorAll('meta[property="og:description"]'), function (m) { m.setAttribute('content', desc); });
-  }
-
-  function patchPhaserText() {
-    if (!window.Phaser || !window.Phaser.GameObjects || !window.Phaser.GameObjects.GameObjectFactory) return false;
-    var proto = window.Phaser.GameObjects.GameObjectFactory.prototype;
-    if (!proto || proto.__iangeloSpanishPatch || !proto.text) return true;
-    var originalText = proto.text;
-    proto.text = function (x, y, text, style) {
-      return originalText.call(this, x, y, replaceTextValue(text), style);
-    };
-    proto.__iangeloSpanishPatch = true;
-    return true;
-  }
-
-  function run() {
-    applyBranding();
-    patchDomText(document.body);
-    patchPhaserText();
+  /* ── Init ── */
+  function init() {
+    injectStyles();
+    injectWatermark();
+    walkAndTranslate();
+    observeMutations();
+    // Re-run after a delay to catch Phaser canvas text (canvas text is not DOM)
+    setTimeout(walkAndTranslate, 2000);
+    setTimeout(walkAndTranslate, 5000);
   }
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', run);
+    document.addEventListener('DOMContentLoaded', init);
   } else {
-    run();
+    init();
   }
 
-  var observer = new MutationObserver(function (mutations) {
-    mutations.forEach(function (mutation) {
-      if (mutation.addedNodes) {
-        Array.prototype.forEach.call(mutation.addedNodes, function (node) {
-          if (node.nodeType === 1) patchDomText(node);
-          if (node.nodeType === 3) node.nodeValue = replaceTextValue(node.nodeValue);
-        });
-      }
-    });
-  });
-
-  if (document.body) {
-    observer.observe(document.body, { childList: true, subtree: true, characterData: true });
-  }
-
-  var tries = 0;
-  var timer = setInterval(function () {
-    run();
-    tries += 1;
-    if (tries > 60 || patchPhaserText()) clearInterval(timer);
-  }, 250);
 })();
