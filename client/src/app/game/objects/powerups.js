@@ -10,8 +10,7 @@ export default class Powerups  {
 		}
 
 		this.scene = props.scene;
-
-
+		this.maxItemsPerType = 3;
 	}
 
 	useItem(item){
@@ -51,9 +50,15 @@ export default class Powerups  {
 	}
 
 	collectItem(item){
+		if (this.items[item] >= this.maxItemsPerType) {
+			this.scene.events.emit("item_changed", this.items);
+			return false;
+		}
+
 		this.items[item] += 1;
 
 		this.scene.events.emit("item_changed", this.items);
+		return true;
 	}
 
 
