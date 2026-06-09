@@ -3,7 +3,6 @@ import Phaser from "phaser";
 import { Redirect } from "react-router-dom";
 import { connect } from 'react-redux';
 
-
 import LoadingScene from "../game/scenes/Loading";
 import PlayScene from "../game/scenes/Play";
 import HUDScene from "../game/scenes/HUD";
@@ -11,18 +10,15 @@ import GameOverScene from "../game/scenes/GameOver";
 
 import "./../stylesheets/pages/game.scss";
 
-
-const mapStateToProps = (state /*, ownProps*/) => {
+const mapStateToProps = (state) => {
   return {
     player: state.player
   }
 }
 
 class Game extends React.Component {
-
   constructor(props){
     super(props);
-
     this.state = {game: null};
   }
 
@@ -37,7 +33,42 @@ class Game extends React.Component {
         width: GAME_WIDTH,
         height: GAME_HEIGHT,
         scale: {
-            mode: Phaser.Scale.RESIZE,
-            autoCenter: Phaser.Scale.CENTER_BOTH,
+          mode: Phaser.Scale.RESIZE,
+          autoCenter: Phaser.Scale.CENTER_BOTH,
         },
-        parent: "
+        parent: "root",
+        physics: {
+          default: 'arcade',
+          arcade: {
+            debug:false
+          }
+        },
+        scene: [ LoadingScene, PlayScene, HUDScene, GameOverScene ]
+      }
+
+      let game = new Phaser.Game(config);
+      window.iAngeloBattleQuestGame = game;
+      game.scene.start("load", { name: this.props.player.name });
+      this.setState({game: game});
+    }
+  }
+
+  shouldComponentUpdate() {
+    return false
+  }
+
+  componentWillUnmount(){
+    if(this.state.game){
+      if (window.iAngeloBattleQuestGame === this.state.game) {
+        window.iAngeloBattleQuestGame = null;
+      }
+      this.state.game.destroy(true);
+    }
+  }
+
+  render() {
+    return ( this.props.player.name == undefined ? <Redirect to="/"/> : null);
+  }
+}
+
+export default connect(mapStateToProps, null)(Game)
