@@ -9,4 +9,10 @@ import PlayScene from "../game/scenes/Play";
 import HUDScene from "../game/scenes/HUD";
 import GameOverScene from "../game/scenes/GameOver";
 
-import "./../stylesheets/pages/game.scss"
+import "./../stylesheets/pages/game.scss";
+
+
+const mapStateToProps = (state /*, ownProps*/) => {
+  return {
+    player: state.player
+  }
