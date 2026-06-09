@@ -21,3 +21,23 @@ const mapStateToProps = (state /*, ownProps*/) => {
 class Game extends React.Component {
 
   constructor(props){
+    super(props);
+
+    this.state = {game: null};
+  }
+
+  componentDidMount() {
+    if(this.props.player.name){
+      let ratio = 9/16;
+      let GAME_WIDTH = 1280;
+      let GAME_HEIGHT = Math.floor(GAME_WIDTH * ratio);
+
+      const config = {
+        type: Phaser.AUTO,
+        width: GAME_WIDTH,
+        height: GAME_HEIGHT,
+        scale: {
+            mode: Phaser.Scale.RESIZE,
+            autoCenter: Phaser.Scale.CENTER_BOTH,
+        },
+        parent: "
