@@ -21,9 +21,3 @@ const mapStateToProps = (state /*, ownProps*/) => {
 class Game extends React.Component {
 
   constructor(props){
-    super(props);
-
-    this.state = {game: null};
-  }
-
-  component
