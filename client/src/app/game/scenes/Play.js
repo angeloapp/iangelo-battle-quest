@@ -112,6 +112,17 @@ export default class PlayScene extends Phaser.Scene {
             scene: this
         });
 
+        if (typeof window !== "undefined") {
+            window.iAngeloBattleQuestPlayScene = this;
+            window.iAngeloBattleControls = window.iAngeloBattleControls || {};
+            window.iAngeloBattleControls.usePowerup = (item) => {
+                if (this.powerups) {
+                    return this.powerups.useItem(item);
+                }
+                return false;
+            };
+        }
+
         HUDScene.events.on("reload_finished", function () {
             this.isReloading = false;
         }, this);
@@ -369,12 +380,17 @@ export default class PlayScene extends Phaser.Scene {
                 }
             } else if (message.event == "powerups_update") {
                 let powerup = self.powerupList[message.index];
-                if (self.room.sessionId == message.owner_id) {
-                    self.powerups.collectItem(powerup.type);
-                }
-                powerup.destroy();
-                if (message.index > -1) {
-                    self.powerupList.splice(message.index, 1);
+                if (powerup) {
+                    if (self.room.sessionId == message.owner_id) {
+                        let collected = self.powerups.collectItem(powerup.type);
+                        if (typeof window !== "undefined") {
+                            window.dispatchEvent(new CustomEvent("ibq:powerup-collected", { detail: { type: powerup.type, collected: collected } }));
+                        }
+                    }
+                    powerup.destroy();
+                    if (message.index > -1) {
+                        self.powerupList.splice(message.index, 1);
+                    }
                 }
             } else {
                 console.log(`${message} es un mensaje desconocido`);
@@ -466,7 +482,7 @@ export default class PlayScene extends Phaser.Scene {
             this.physics.add.collider(this.player.sprite, this.map["blockLayer"]);
 
             this.physics.add.overlap(this.player.sprite, this.powerupList, (player, powerup) => {
-                if (this.powerups.items[this.powerups_types[powerup.i]] < 3) {
+                if (powerup && this.powerups && this.powerups.items[this.powerups_types[powerup.i]] < this.powerups.maxItemsPerType) {
                     let index = this.powerupList.indexOf(powerup);
                     if (index > -1) {
                         this.room.send({
